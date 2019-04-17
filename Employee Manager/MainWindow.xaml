@@ -1,0 +1,202 @@
+﻿<Window x:Class="Lab4.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:Lab4"
+        mc:Ignorable="d"
+        Title="Employees managment" FontSize="14" Height="500" Width="800" MinWidth="600" MinHeight="300" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <!--Converters-->
+        <local:DateConverter x:Key="DateConverter"/>
+        <local:ErrorMessageVisibilityConverter x:Key="VisibilityConverter"/>        
+        <!--Enum handilng-->
+        <ObjectDataProvider x:Key="Roles" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName="local:Role" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="Currencies" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:TypeExtension TypeName="local:Currency" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <!--Styles-->
+        <Style x:Key="labelstyle" TargetType="{x:Type Label}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+        <Style x:Key="boxstyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+        <Style x:Key="boxCountryStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="WordEllipsis"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+        <Style x:Key="menuItemStyle" TargetType="{x:Type MenuItem}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+        <!--Template for not CEOs-->
+        <DataTemplate x:Key="IsNotCEOTemplate">
+            <GroupBox Header="{Binding FullName}" FontSize="12" FontFamily="Arial" MinWidth="800">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*" MaxWidth="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!--First row-->
+                    <Label Style="{StaticResource labelstyle}" Content="Sex:" Grid.Row="0" Grid.Column="0"/>
+                    <TextBlock Style="{StaticResource boxstyle}" Text="{Binding Sex}" Grid.Row="0" Grid.Column="1" />
+                    <Label Style="{StaticResource labelstyle}" Content="Company Role:" Grid.Row="0" Grid.Column="2"/>
+                    <Label Style="{StaticResource labelstyle}" Content="Salary:" Grid.Row="0" Grid.Column="4"/>
+                    <ComboBox IsMouseCaptureWithinChanged="ComboBox_IsMouseCaptureWithinChanged" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" Height="30" Grid.Row="0" Grid.Column="3" SelectedItem="{Binding CompanyRole}" ItemsSource="{Binding Source={StaticResource Roles}}" />
+                    <TextBox TextChanged="salary_TextChanged" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="20" Grid.Row="0" Grid.Column="5" Name="salary">
+                        <TextBox.Text>
+                            <Binding Path="Salary" UpdateSourceTrigger="PropertyChanged">
+                                <Binding.ValidationRules>
+                                    <local:SalaryRule MinSalary="5000"/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>
+                    <!--Textblock for validation-->
+                    <TextBlock FontFamily="Arial" FontSize="11" Grid.Row="1" Grid.Column="5" TextAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" TextBlock.Foreground="Red" Visibility="{Binding ElementName=salary, Path=(Validation.Errors), Converter={StaticResource VisibilityConverter}}" Text="{Binding ElementName=salary, Path=(Validation.Errors)[0].ErrorContent}" />
+                    <!--Second row-->
+                    <Label Style="{StaticResource labelstyle}" Content="Date:" Grid.Row="2" Grid.Column="0"/>
+                    <TextBlock Style="{StaticResource boxstyle}" Text="{Binding BirthDate, Converter={StaticResource DateConverter}}" Grid.Row="2" Grid.Column="1"/>
+                    <Label Style="{StaticResource labelstyle}" Content="Country:" Grid.Row="2" Grid.Column="2"/>
+                    <TextBlock Style="{StaticResource boxCountryStyle}" Text="{Binding BirthCountry}" Grid.Row="2" Grid.Column="3"/>
+                    <Label Style="{StaticResource labelstyle}" Content="Salary currency:" Grid.Row="2" Grid.Column="4"/>
+                    <ComboBox IsMouseCaptureWithinChanged="ComboBox_IsMouseCaptureWithinChanged" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" Height="30" Grid.Row="2" Grid.Column="5" SelectedItem="{Binding SalaryCurrency}" ItemsSource="{Binding Source={StaticResource Currencies}}" />
+                </Grid>
+            </GroupBox>
+        </DataTemplate>
+        <!--Template for CEOs-->
+        <DataTemplate x:Key="IsCEOTemplate">
+            <GroupBox Header="{Binding FullName}" FontSize="12" FontFamily="Arial" MinWidth="800">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*" MaxWidth="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!--First row-->
+                    <Label Style="{StaticResource labelstyle}" Content="Sex:" Grid.Row="0" Grid.Column="0"/>
+                    <TextBlock Style="{StaticResource boxstyle}" Text="{Binding Sex}" Grid.Row="0" Grid.Column="1" />
+                    <Label Style="{StaticResource labelstyle}" Content="Company Role:" Grid.Row="0" Grid.Column="2"/>
+                    <TextBlock Style="{StaticResource boxstyle}" Grid.Row="0" Grid.Column="3" Text="{Binding CompanyRole}" />
+                    <Label Style="{StaticResource labelstyle}" Content="Salary:" Grid.Row="0" Grid.Column="4"/>
+                    <TextBox TextChanged="salary_TextChanged" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Height="20" Grid.Row="0" Grid.Column="5" Name="salary">
+                        <TextBox.Text>
+                            <Binding Path="Salary" UpdateSourceTrigger="PropertyChanged">
+                                <Binding.ValidationRules>
+                                    <local:SalaryRule MinSalary="5000"/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>
+                    <!--Textblock for validation-->
+                    <TextBlock FontFamily="Arial" FontSize="11" Grid.Row="1" Grid.Column="5" TextAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" TextBlock.Foreground="Red" Visibility="{Binding ElementName=salary, Path=(Validation.Errors), Converter={StaticResource VisibilityConverter}}" Text="{Binding ElementName=salary, Path=(Validation.Errors)[0].ErrorContent}" />
+                    <!--Second row-->
+                    <Label Style="{StaticResource labelstyle}" Content="Date:" Grid.Row="2" Grid.Column="0"/>
+                    <TextBlock Style="{StaticResource boxstyle}" Text="{Binding BirthDate, Converter={StaticResource DateConverter}}" Grid.Row="2" Grid.Column="1"/>
+                    <Label Style="{StaticResource labelstyle}" Content="Country:" Grid.Row="2" Grid.Column="2"/>
+                    <TextBlock Style="{StaticResource boxCountryStyle}" Text="{Binding BirthCountry}" Grid.Row="2" Grid.Column="3"/>
+                    <Label Style="{StaticResource labelstyle}" Content="Salary currency:" Grid.Row="2" Grid.Column="4"/>
+                    <ComboBox IsMouseCaptureWithinChanged="ComboBox_IsMouseCaptureWithinChanged" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" VerticalAlignment="Center" Height="30" Grid.Row="2" Grid.Column="5" SelectedItem="{Binding SalaryCurrency}" ItemsSource="{Binding Source={StaticResource Currencies}}" />
+                </Grid>
+            </GroupBox>
+        </DataTemplate>     
+        <!--Template selector-->
+        <local:IsCEOSelector x:Key="templateSelector" IsCEOTemplate="{StaticResource IsCEOTemplate}" IsNotCEOTemplate="{StaticResource IsNotCEOTemplate}"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="30"/>
+        </Grid.ColumnDefinitions>
+        <!--Menu-->
+        <Menu HorizontalAlignment="Left" Width="30">
+            <MenuItem Style="{StaticResource menuItemStyle}" Header="File" HorizontalAlignment="Stretch">
+                <MenuItem Style="{StaticResource menuItemStyle}" Header="Open..." Click="Open_Click"/>
+                <MenuItem Style="{StaticResource menuItemStyle}" Header="Save" Click="Save_Click"/>
+                <MenuItem Style="{StaticResource menuItemStyle}" Header="Save file..." Click="SaveAs_Click"/>
+                <Separator/>
+                <MenuItem Style="{StaticResource menuItemStyle}" Header="Close" Click="Close_Click"/>
+            </MenuItem>
+        </Menu>
+        <!--List of employees-->
+        <ListView ItemTemplateSelector="{StaticResource templateSelector}"  Name="Listbox" ItemsSource="{Binding}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1" Margin="20,20,0,20" VerticalContentAlignment="Center" HorizontalContentAlignment="Stretch">
+            <!--Animation-->
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Setter Property="UIElement.RenderTransformOrigin" Value="0.5,0.5" />
+                    <Setter Property="UIElement.RenderTransform">
+                        <Setter.Value>
+                            <RotateTransform x:Name="noFreeze" />
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <EventTrigger.Actions>
+                                <BeginStoryboard>
+                                    <Storyboard Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)">
+                                        <DoubleAnimation Duration="0:0:.01" To="-2" />
+                                        <DoubleAnimation Duration="0:0:.02" BeginTime="0:0:.01" From="-2" To="2" AutoReverse="True" RepeatBehavior="2x" />
+                                        <DoubleAnimation Duration="0:0:0.01" BeginTime="0:0:0.13" To="0" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger.Actions>
+                        </EventTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+        <!--Buttons-->
+        <StackPanel Grid.Row="1" Grid.Column="2" Margin="5,20,20,20">
+            <Button Click="Button_MoveUp"  Content="&#x2191;" Grid.Column="2" Grid.Row="1" Width="150" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,20,5"/>
+            <Button Click="Button_MoveDown" Content="&#x2193;" Grid.Column="2" Grid.Row="1" Width="150" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,20,5"/>
+            <Button Click="AddNewEmployee" Content="Add new employee" Grid.Column="2" Grid.Row="1" Width="150" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,20,5"/>
+            <Button Click="DeleteEmployee" Content="Delete employee" Grid.Column="2" Grid.Row="1" Width="150" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,5,20,5"/>
+        </StackPanel>        
+    </Grid>
+</Window>
