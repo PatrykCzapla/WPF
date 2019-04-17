@@ -1,2 +1,1 @@
-# WPF
-Windows Presentation Foundation 
+WPF - tasks from laboratory at MiNI faculty of Warsaw University of Technology
