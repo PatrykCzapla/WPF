@@ -92,7 +92,7 @@ namespace Lab4
         {
             if (this.employees == null) return;
             index = Listbox.SelectedIndex;
-            if (index >= employees.Count - 1) return;
+            if (index == -1 || index >= employees.Count - 1) return;
             Employee em = employees[index + 1];
             employees[index + 1] = employees[index];
             employees[index] = em;
